@@ -14,6 +14,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+
+
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -28,6 +30,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
+
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Methods", "*");
+        response.setHeader("Access-Control-Allow-Headers", "*");
 
         String path = request.getRequestURI();
         String method = request.getMethod();
