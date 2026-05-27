@@ -30,19 +30,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
+        String method = request.getMethod();
 
-        // Skip filter entirely for public paths
-        path = request.getRequestURI();
-        if (path.startsWith("/api/auth/") ||
-                path.startsWith("/api/paystack/verify/") ||
-                path.startsWith("/uploads/") ||
-                path.startsWith("/images/") ||   // add this in the skip list
-                (path.startsWith("/api/products/") && request.getMethod().equals("GET"))) {
+        // 1. Skip filter for OPTIONS preflight requests (CORS)
+        if ("OPTIONS".equalsIgnoreCase(method)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // For all other requests, try to authenticate
+        // 2. Skip authentication for public endpoints
+        if (path.startsWith("/api/auth/") ||
+                path.startsWith("/api/paystack/verify/") ||
+                path.startsWith("/uploads/") ||
+                path.startsWith("/images/") ||
+                path.startsWith("/api/shipping/") ||
+                path.equals("/api/coupons/validate") ||
+                (path.startsWith("/api/products/") && "GET".equalsIgnoreCase(method))) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // 3. For all other requests, try to extract and validate JWT
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
